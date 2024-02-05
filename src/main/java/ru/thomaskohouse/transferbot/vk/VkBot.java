@@ -11,6 +11,8 @@ import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
 import com.vk.api.sdk.queries.groups.GroupsGetLongPollServerQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.thomaskohouse.transferbot.entity.VkChat;
+import ru.thomaskohouse.transferbot.service.VkChatService;
 import ru.thomaskohouse.transferbot.telegram.TelegramBot;
 
 import java.io.BufferedReader;
@@ -23,13 +25,15 @@ import java.util.Date;
 @Service
 public class VkBot {
     private final VkBotProperties vkBotProperties;
-    public VkBot(@Autowired VkBotProperties vkBotProperties, @Autowired TelegramBot telegramBot) throws  ClientException, ApiException {
+    private final VkChatService vkChatService;
+    public VkBot(@Autowired VkBotProperties vkBotProperties, @Autowired TelegramBot telegramBot,
+                 @Autowired VkChatService vkChatService) throws  ClientException, ApiException {
         this.vkBotProperties = vkBotProperties;
+        this.vkChatService = vkChatService;
         Gson gs = new Gson();
         TransportClient transportClient = new HttpTransportClient();
         VkApiClient vk = new VkApiClient(transportClient);
         GroupActor actor = new GroupActor(vkBotProperties.getGroupId(), vkBotProperties.getClientSecret());
-
         GroupsGetLongPollServerQuery serverQuery = vk.groups().getLongPollServer(actor, vkBotProperties.getGroupId());
         GetLongPollServerResponse response = serverQuery.execute();
         String key = response.getKey();
@@ -63,9 +67,22 @@ public class VkBot {
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
+                            String chatName = message.get("peer_id").toString();
+                            chatName = vkChatService.getChatName(Long.parseLong(chatName));
+                            res += "\n" + "из чатика " + chatName;
                             res += "\n" + getStringDateTimeFromUnixTime(removeQuotes(message.get("date").toString()));
-                            String messageText = message.get("text").toString();
-                            res += "\n\n" + messageText.substring(1, messageText.length()-1);
+                            String messageText = removeQuotes(message.get("text").toString());
+                            if (message.has("reply_message")){
+                                JsonObject replyMessage = message.get("reply_message").getAsJsonObject();
+                                String[] replyLines = removeQuotes(replyMessage.get("text").toString()).split("\n");
+                                for (String line: replyLines) {
+                                    messageText += "\t\n>" + line;
+                                }
+                            } else {
+                                System.out.println("Reply is empty");
+                            }
+
+                            res += "\n\n" + messageText;
 
                             System.out.println(res);
                             telegramBot.sendTextMessage(res);

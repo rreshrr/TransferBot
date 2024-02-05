@@ -1,13 +1,14 @@
-package ru.thomaskohouse.transferbot.telegram;
+package ru.thomaskohouse.transferbot.telegram.command;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import ru.thomaskohouse.transferbot.telegram.command.Command;
 
 @RequiredArgsConstructor
 @Component
-public class StartCommand implements Command{
+public class StartCommand implements Command {
     @Override
     public SendMessage apply(Update update) {
         String chatId = update.getMessage().getChatId().toString();

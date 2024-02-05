@@ -37,12 +37,21 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String chatId = update.getMessage().getChatId().toString();
+
             if (update.getMessage().getText().startsWith("/")) {
                 sendMessage(commandsHandler.handleCommands(update));
             } else {
                 try {
-                    transferUtils.sendToVk(update.getMessage().getText());
+                    String messageText = update.getMessage().getText();
+                    if (update.getMessage().isReply()){
+                       messageText += "\n";
+                       String[] replyLines = update.getMessage().getReplyToMessage().getText().split("\n");
+                        for (String line: replyLines) {
+                            messageText += "\t\n>" + line;
+                        }
+                    }
+                    transferUtils.sendToVk(messageText);
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -51,8 +60,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             System.err.println("Пока не орабатываем каллбеки...");
         }
     }
-
-
 
     public void sendTextMessage(String text){
         sendMessage(new SendMessage(transferProperties.getTgChatId(), text));

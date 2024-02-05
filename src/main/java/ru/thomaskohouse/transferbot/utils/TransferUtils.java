@@ -1,6 +1,7 @@
 package ru.thomaskohouse.transferbot.utils;
 
 import com.google.gson.Gson;
+import lombok.Setter;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -25,7 +26,9 @@ public class TransferUtils {
     }
 
     private final VkBotProperties vkBotProperties;
-    private final Long vkChatId;
+
+    @Setter
+    private Long vkChatId;
 
     public void sendToVk(String text) throws IOException {
         Gson gs = new Gson();
