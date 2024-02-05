@@ -13,10 +13,10 @@ import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
-public class BotInit {
+public class TelegramBotInit {
     private final TelegramBot tgBot;
 
-    public BotInit(@Autowired TelegramBot tgBot) {
+    public TelegramBotInit(@Autowired TelegramBot tgBot) {
         this.tgBot = tgBot;
     }
 

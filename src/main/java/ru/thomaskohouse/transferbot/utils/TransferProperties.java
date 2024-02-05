@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 @Data // lombok
 @PropertySource("classpath:application.properties")
 public class TransferProperties {
-    private Long vkChatId; //чат куда шлём вк
-    private String tgChatId; //чат куда шлем в тг
+    private Long vkChatId;      //чат куда шлём вк
+    private String tgChatId;    //чат куда шлем в тг
 }

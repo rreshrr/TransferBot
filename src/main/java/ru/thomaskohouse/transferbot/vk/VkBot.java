@@ -9,23 +9,22 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
 import com.vk.api.sdk.queries.groups.GroupsGetLongPollServerQuery;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.thomaskohouse.transferbot.utils.TransferUtils;
+import ru.thomaskohouse.transferbot.telegram.TelegramBot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Service
-public class VkBotInit {
+public class VkBot {
     private final VkBotProperties vkBotProperties;
-    private final TransferUtils transferUtils;
-    public VkBotInit(@Autowired VkBotProperties vkBotProperties, @Autowired TransferUtils transferUtils) throws InterruptedException, ClientException, ApiException, IOException {
+    public VkBot(@Autowired VkBotProperties vkBotProperties, @Autowired TelegramBot telegramBot) throws  ClientException, ApiException {
         this.vkBotProperties = vkBotProperties;
-        this.transferUtils = transferUtils;
         Gson gs = new Gson();
         TransportClient transportClient = new HttpTransportClient();
         VkApiClient vk = new VkApiClient(transportClient);
@@ -35,8 +34,6 @@ public class VkBotInit {
         GetLongPollServerResponse response = serverQuery.execute();
         String key = response.getKey();
         String serverUrl = response.getServer().toString();
-        //Integer ts = Integer.valueOf(response.getTs());
-
 
         Thread thread = new Thread(
                 () -> {
@@ -66,23 +63,31 @@ public class VkBotInit {
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
-                            res += ":\n" + message.get("text").toString();
+                            res += "\n" + getStringDateTimeFromUnixTime(removeQuotes(message.get("date").toString()));
+                            String messageText = message.get("text").toString();
+                            res += "\n\n" + messageText.substring(1, messageText.length()-1);
 
                             System.out.println(res);
-                            transferUtils.resendFromVkToTg(res);
+                            telegramBot.sendTextMessage(res);
                         }
                     }
                 }
         );
         thread.start();
-
     }
 
-    public static String removeQuotes(String string){
+    private static String removeQuotes(String string){
         return string.replaceAll("\"", "");
     }
 
-    public static String loadJson(String url) throws IOException {
+    private static String getStringDateTimeFromUnixTime(String unixTimestamp){
+        Long unixTime = Long.parseLong(unixTimestamp);
+        Date date = new Date(unixTime*1000L);
+        SimpleDateFormat jdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        return jdf.format(date);
+    }
+
+    private static String loadJson(String url) throws IOException {
         URL obj = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
         connection.setRequestMethod("GET");
@@ -106,4 +111,5 @@ public class VkBotInit {
         JsonObject firstObject = responseJson.getAsJsonArray("response").get(0).getAsJsonObject();
         return removeQuotes(firstObject.get("first_name").toString()) + " " + removeQuotes(firstObject.get("last_name").toString());
     }
+
 }

@@ -25,12 +25,12 @@ public class CommandsHandler {
         String messageText = update.getMessage().getText();
         String command = messageText.split(" ")[0];
         long chatId = update.getMessage().getChatId();
-
         Command commandHandler = commands.get(command);
+
         if (commandHandler != null) {
             return commandHandler.apply(update);
         } else {
-            return new SendMessage(String.valueOf(chatId), "dont know");
+            return new SendMessage(String.valueOf(chatId), "Эта команда неизвестна в этих краях");
         }
     }
 

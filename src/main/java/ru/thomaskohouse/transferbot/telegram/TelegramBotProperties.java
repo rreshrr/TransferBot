@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "bot") //  префикс
 @Data // lombok
 @PropertySource("classpath:application.properties")
-public class BotProperties {
+public class TelegramBotProperties {
     private String name;
     private String token;
 }
