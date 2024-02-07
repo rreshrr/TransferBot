@@ -13,4 +13,5 @@ import org.springframework.stereotype.Component;
 public class TelegramBotProperties {
     private String name;
     private String token;
+    private Long ownerId;
 }

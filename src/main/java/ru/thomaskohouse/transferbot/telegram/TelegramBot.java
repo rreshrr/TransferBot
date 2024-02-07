@@ -37,8 +37,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-
-            if (update.getMessage().getText().startsWith("/")) {
+            if (!update.getMessage().getFrom().getId().equals(telegramBotProperties.getOwnerId())){
+                sendMessage(new SendMessage(update.getMessage().getChatId().toString(), "прости, дорогой, я работаю только для @rreshrr <3\nНапиши ему и он тебе поможет!"));
+            } else if (update.getMessage().getText().startsWith("/")) {
                 sendMessage(commandsHandler.handleCommands(update));
             } else {
                 try {

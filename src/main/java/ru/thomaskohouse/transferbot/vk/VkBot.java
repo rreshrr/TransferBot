@@ -82,6 +82,35 @@ public class VkBot {
                                 System.out.println("Reply is empty");
                             }
 
+                            if (message.has("attachments")) {
+
+                                messageText += "\nВложил:\n";
+                                var attachments = message.getAsJsonArray("attachments");
+                                for (JsonElement attachment : attachments) {
+                                    String attachmentType = removeQuotes(attachment.getAsJsonObject().get("type").toString());
+                                    switch (attachmentType){
+                                        case "photo":
+                                            messageText += "фотку: ";
+                                            var sizes = attachment.getAsJsonObject().get("photo").getAsJsonObject().getAsJsonArray("sizes");
+                                            int maxHeight = 0;
+                                            String imgUrl = "none";
+                                            for (JsonElement size : sizes) {
+                                                int locHeight = Integer.parseInt(size.getAsJsonObject().get("height").toString());
+                                                if (locHeight > maxHeight){
+                                                    imgUrl = size.getAsJsonObject().get("url").toString();
+                                                }
+                                            }
+                                            messageText += imgUrl;
+                                            break;
+                                        case "wall":
+                                            messageText += "какой-то пост";
+                                            break;
+                                        default:
+                                            messageText += "чето с типом " + attachmentType;
+                                    }
+                                    messageText += "; ";
+                                }
+                            }
                             res += "\n\n" + messageText;
 
                             System.out.println(res);
