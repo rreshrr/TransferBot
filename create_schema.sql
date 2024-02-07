@@ -1,0 +1,1 @@
+CREAtE SCHEMA transfer_bot;

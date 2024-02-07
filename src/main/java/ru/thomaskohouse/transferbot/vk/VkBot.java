@@ -10,8 +10,7 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
 import com.vk.api.sdk.queries.groups.GroupsGetLongPollServerQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import ru.thomaskohouse.transferbot.entity.VkChat;
+import org.springframework.stereotype.Component;
 import ru.thomaskohouse.transferbot.service.VkChatService;
 import ru.thomaskohouse.transferbot.telegram.TelegramBot;
 
@@ -22,14 +21,12 @@ import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-@Service
+@Component
 public class VkBot {
     private final VkBotProperties vkBotProperties;
-    private final VkChatService vkChatService;
     public VkBot(@Autowired VkBotProperties vkBotProperties, @Autowired TelegramBot telegramBot,
                  @Autowired VkChatService vkChatService) throws  ClientException, ApiException {
         this.vkBotProperties = vkBotProperties;
-        this.vkChatService = vkChatService;
         Gson gs = new Gson();
         TransportClient transportClient = new HttpTransportClient();
         VkApiClient vk = new VkApiClient(transportClient);
@@ -59,7 +56,7 @@ public class VkBot {
                         ts = messageObject.get("ts").getAsInt();
                         JsonArray msg_array = messageObject.getAsJsonArray("updates");
                         for (JsonElement ob: msg_array) {
-                            System.out.println(ob.getAsJsonObject());
+                            //System.out.println(ob.getAsJsonObject());
                             JsonObject message = ob.getAsJsonObject().get("object").getAsJsonObject().get("message").getAsJsonObject();
                             String res = null;
                             try {
@@ -79,13 +76,15 @@ public class VkBot {
                                     messageText += "\t\n>" + line;
                                 }
                             } else {
-                                System.out.println("Reply is empty");
+                                //System.out.println("Reply is empty");
                             }
 
                             if (message.has("attachments")) {
 
-                                messageText += "\nВложил:\n";
+
                                 var attachments = message.getAsJsonArray("attachments");
+                                if (!attachments.isEmpty())
+                                    messageText += "\nВложил:\n";
                                 for (JsonElement attachment : attachments) {
                                     String attachmentType = removeQuotes(attachment.getAsJsonObject().get("type").toString());
                                     switch (attachmentType){
@@ -113,7 +112,7 @@ public class VkBot {
                             }
                             res += "\n\n" + messageText;
 
-                            System.out.println(res);
+                            //System.out.println(res);
                             telegramBot.sendTextMessage(res);
                         }
                     }

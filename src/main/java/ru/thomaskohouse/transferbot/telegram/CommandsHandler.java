@@ -14,7 +14,6 @@ import ru.thomaskohouse.transferbot.telegram.command.StartCommand;
 import java.util.Map;
 
 @Component
-@Slf4j
 public class CommandsHandler {
 
     private final Map<String, Command> commands;

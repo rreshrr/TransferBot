@@ -36,7 +36,7 @@ dependencies {
     // https://mvnrepository.com/artifact/com.vk.api/sdk
     implementation 'com.vk.api:sdk:1.0.15'
 
-    compileOnly('javax.xml.bind:jaxb-api:2.3.0')
+    implementation('javax.xml.bind:jaxb-api:2.3.0')
 
     implementation 'com.google.code.gson:gson:2.10.1'
 
