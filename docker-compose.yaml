@@ -1,0 +1,23 @@
+version: '3'
+services:
+  app:
+    container_name: 'transfer-bot'
+    image: 'rreshrr/transfer-bot:beta'
+    build: ./
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/data
+      - SPRING_DATASOURCE_USERNAME=data
+      - SPRING_DATASOURCE_PASSWORD=data
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+  postgres:
+    image: 'postgres:13.1-alpine'
+    container_name: 'postgresql'
+    ports:
+      - 5445:5432
+    environment:
+      - 'POSTGRES_PASSWORD=data'
+      - 'POSTGRES_USER=data'
+    volumes:
+      - ./create_schema.sql:/docker-entrypoint-initdb.d/01create_schema.sql
