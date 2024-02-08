@@ -55,7 +55,7 @@ public class NetworkUtils {
         String response = httpGet(url);
         JsonObject responseJson = gs.fromJson(response, JsonObject.class);
         JsonObject firstObject = responseJson.getAsJsonArray("response").get(0).getAsJsonObject();
-        return firstObject.get("first_name").toString() + " " + firstObject.get("last_name").toString();
+        return firstObject.get("first_name").getAsString() + " " + firstObject.get("last_name").getAsString();
     }
 
     public void sendToVk(String text) throws IOException {
