@@ -24,8 +24,8 @@ public class TelegramBotInit {
     public void init() throws TelegramApiException {
         TelegramBotsApi tgBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
-            tgBotsApi.registerBot((LongPollingBot) tgBot);
-            System.out.println("Register success");
+            tgBotsApi.registerBot(tgBot);
+            System.out.println("TgBot - Register success");
         }
         catch (TelegramApiException e){
 

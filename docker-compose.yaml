@@ -13,7 +13,7 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=create
   postgres:
     image: 'postgres:13.1-alpine'
-    container_name: 'postgresql'
+    container_name: 'dbfortransfer'
     ports:
       - 5445:5432
     environment:

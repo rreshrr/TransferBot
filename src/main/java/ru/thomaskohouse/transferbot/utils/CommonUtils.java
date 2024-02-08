@@ -1,4 +1,4 @@
-package ru.thomaskohouse.transferbot;
+package ru.thomaskohouse.transferbot.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.thomaskohouse.transferbot.service.VkChatService;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -32,7 +31,6 @@ public class CommonUtils {
     public String parseStringMessageForTgFromJsonMessageVk(String jsonString) {
         Gson gs = new Gson();
         JsonObject messageObject = gs.fromJson(jsonString, JsonObject.class);
-        int ts = messageObject.get("ts").getAsInt();
         JsonArray msg_array = messageObject.getAsJsonArray("updates");
         StringBuilder messageText = new StringBuilder();
         for (JsonElement ob : msg_array) {
@@ -84,4 +82,5 @@ public class CommonUtils {
         }
         return String.valueOf(messageText);
     }
+
 }

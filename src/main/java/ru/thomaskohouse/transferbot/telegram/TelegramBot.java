@@ -6,6 +6,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.thomaskohouse.transferbot.utils.NetworkUtils;
 import ru.thomaskohouse.transferbot.utils.TransferProperties;
 import ru.thomaskohouse.transferbot.utils.TransferUtils;
 
@@ -18,7 +19,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final TelegramBotProperties telegramBotProperties;
     private final CommandsHandler commandsHandler;
     private final TransferProperties transferProperties;
-    private final TransferUtils transferUtils;
+    private final NetworkUtils networkUtils;
     @Override
     public String getBotUsername() {
         return telegramBotProperties.getName();
@@ -31,7 +32,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Ошибка при отправке сообщения в Telegram" + e.getMessage());
         }
     }
     @Override
@@ -42,6 +43,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (update.getMessage().getText().startsWith("/")) {
                 sendMessage(commandsHandler.handleCommands(update));
             } else {
+
                 try {
                     String messageText = update.getMessage().getText();
                     if (update.getMessage().isReply()){
@@ -51,7 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                             messageText += "\t\n>" + line;
                         }
                     }
-                    transferUtils.sendToVk(messageText);
+                    networkUtils.sendToVk(messageText);
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);

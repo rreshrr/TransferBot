@@ -26,7 +26,7 @@ public class VkChatService {
 
     public Long getChatId(String chatName){
         Optional<VkChat> vkChat = vkChatRepository.findVkChatByName(chatName);
-        return vkChat.isPresent() ? vkChat.get().getChatId() : null;
+        return vkChat.map(VkChat::getChatId).orElse(null);
     }
 
 }
