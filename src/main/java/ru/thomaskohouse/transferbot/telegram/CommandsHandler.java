@@ -22,7 +22,6 @@ public class CommandsHandler {
                            @Autowired ActiveCommand activeCommand) {
         this.commands = Map.of(
                 "/start", startCommand,
-
                 "/add", addCommand,
                 "/active", activeCommand
         );

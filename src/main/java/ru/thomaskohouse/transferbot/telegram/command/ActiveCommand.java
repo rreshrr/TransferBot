@@ -22,6 +22,7 @@ public class ActiveCommand implements Command{
             Long chatId = vkChatService.getChatId(chatName);
             if (chatId != null){
                 transferUtils.setVkChatId(chatId);
+                System.out.printf("Чат %s (%s) был выбран активным", chatName, chatId);
                 infoMessageText = "Чат " + chatName + " выбран активным! Любое отправленное сообщение улетит прямиком туда";
             } else {
                 infoMessageText = "Нет такого чата как " + chatName;

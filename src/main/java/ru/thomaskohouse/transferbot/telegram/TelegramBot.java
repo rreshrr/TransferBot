@@ -31,6 +31,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendMessage(SendMessage sendMessage) {
         try {
             execute(sendMessage);
+            System.out.printf("\nОтправили в телеграм %s", sendMessage);
         } catch (TelegramApiException e) {
             System.err.println("Ошибка при отправке сообщения в Telegram" + e.getMessage());
         }
@@ -38,6 +39,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
+            System.out.printf("\nПолучили из Telegram %s", update.getMessage());
             if (!update.getMessage().getFrom().getId().equals(telegramBotProperties.getOwnerId())){
                 sendMessage(new SendMessage(update.getMessage().getChatId().toString(), "прости, дорогой, я работаю только для @rreshrr <3\nНапиши ему и он тебе поможет!"));
             } else if (update.getMessage().getText().startsWith("/")) {

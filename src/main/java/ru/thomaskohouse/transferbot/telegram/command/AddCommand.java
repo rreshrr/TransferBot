@@ -21,6 +21,7 @@ public class AddCommand implements Command{
             Long chatId = Long.parseLong(args[1]);
             String chatName = args[2];
             vkChatService.addChat(chatId, chatName);
+            System.out.printf("Был добавлен чат: %s (%s)", chatName, chatId);
             infoMessageText = "Чат " + chatId + " успешно добавлен как " + chatName;
         } else {
             infoMessageText = "Всё плохо с параметрами команды /add";

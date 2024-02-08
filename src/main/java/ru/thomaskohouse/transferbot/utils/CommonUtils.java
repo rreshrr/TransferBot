@@ -31,6 +31,7 @@ public class CommonUtils {
     public String parseStringMessageForTgFromJsonMessageVk(String jsonString) {
         Gson gs = new Gson();
         JsonObject messageObject = gs.fromJson(jsonString, JsonObject.class);
+        System.out.printf("\nПолучили из вк %s", messageObject.toString());
         JsonArray msg_array = messageObject.getAsJsonArray("updates");
         StringBuilder messageText = new StringBuilder();
         for (JsonElement ob : msg_array) {

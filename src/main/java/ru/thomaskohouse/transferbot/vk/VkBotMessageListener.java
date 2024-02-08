@@ -31,8 +31,9 @@ public class VkBotMessageListener implements Runnable{
             String json = networkUtils.httpGet(url);
             ts = gs.fromJson(json, JsonObject.class).get("ts").getAsInt();
             String messageText = commonUtils.parseStringMessageForTgFromJsonMessageVk(json);
-            if (!messageText.isEmpty())
+            if (!messageText.isEmpty()) {
                 telegramBot.sendTextMessage(messageText);
+            }
         }
     }
 }

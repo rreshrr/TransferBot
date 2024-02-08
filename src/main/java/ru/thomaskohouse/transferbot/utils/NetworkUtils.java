@@ -73,7 +73,7 @@ public class NetworkUtils {
         params.add(new BasicNameValuePair("message", text));
         params.add(new BasicNameValuePair("access_token", vkBotProperties.getClientSecret()));
         params.add(new BasicNameValuePair("v", "5.199"));
-
+        System.out.printf("\nОтправили вк: %s", text);
         httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         httpClient.execute(httpPost);
         httpClient.close();

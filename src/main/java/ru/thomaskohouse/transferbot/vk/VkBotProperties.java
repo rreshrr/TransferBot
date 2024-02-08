@@ -13,5 +13,4 @@ public class VkBotProperties {
     private Long groupId;
     private String clientSecret;
     private String apiVersion;
-
 }
