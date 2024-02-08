@@ -1,5 +1,7 @@
 package ru.thomaskohouse.transferbot.telegram;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 
@@ -15,6 +17,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Component
 public class TelegramBotInit {
     private final TelegramBot tgBot;
+    private final Logger logger = LoggerFactory.getLogger(TelegramBotInit.class);
 
     public TelegramBotInit(@Autowired TelegramBot tgBot) {
         this.tgBot = tgBot;
@@ -25,11 +28,10 @@ public class TelegramBotInit {
         TelegramBotsApi tgBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
             tgBotsApi.registerBot(tgBot);
-            System.out.println("TgBot - Register success");
+            logger.info("TgBot - Register success");
         }
         catch (TelegramApiException e){
-
-            System.out.println("Register failed");
+           logger.error("Register failed");
         }
     }
 

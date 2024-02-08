@@ -5,6 +5,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.thomaskohouse.transferbot.service.VkChatService;
 
@@ -16,6 +18,7 @@ import java.util.Date;
 public class CommonUtils {
     private final NetworkUtils networkUtils;
     private final VkChatService vkChatService;
+    private final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
     public String getStringDateTimeFromUnixTime(String unixTimestamp) {
         long unixTime = Long.parseLong(unixTimestamp);
@@ -27,7 +30,7 @@ public class CommonUtils {
     public String parseStringMessageForTgFromJsonMessageVk(String jsonString) {
         Gson gs = new Gson();
         JsonObject messageObject = gs.fromJson(jsonString, JsonObject.class);
-        System.out.printf("\nПолучили из вк %s", messageObject.toString());
+        logger.info("\nПолучили из вк {}", messageObject);
         JsonArray msg_array = messageObject.getAsJsonArray("updates");
         StringBuilder messageText = new StringBuilder();
         for (JsonElement ob : msg_array) {
@@ -54,7 +57,7 @@ public class CommonUtils {
                 var attachments = message.getAsJsonArray("attachments");
                 if (!attachments.isEmpty()){
                     mainMessageText.append("\nВложения:\n");
-                    int attachmentInd = 1;
+                    int attachmentInd = 0;
                     for (JsonElement attachment : attachments) {
                         attachmentInd++;
                         String attachmentType = attachment.getAsJsonObject().get("type").getAsString();
@@ -65,9 +68,9 @@ public class CommonUtils {
                                 int maxHeight = 0;
                                 String imgUrl = "none";
                                 for (JsonElement size : sizes) {
-                                    int locHeight = Integer.parseInt(size.getAsJsonObject().get("height").toString());
+                                    int locHeight = size.getAsJsonObject().get("height").getAsInt();
                                     if (locHeight > maxHeight) {
-                                        imgUrl = size.getAsJsonObject().get("url").toString();
+                                        imgUrl = size.getAsJsonObject().get("url").getAsString();
                                     }
                                 }
                                 mainMessageText.append(imgUrl);
@@ -78,7 +81,7 @@ public class CommonUtils {
                             default:
                                 mainMessageText.append(attachmentInd).append(". Что-то неизвестное с типом ").append(attachmentType);
                         }
-                        mainMessageText.append("; ");
+                        mainMessageText.append("\n");
                     }
                 }
             }

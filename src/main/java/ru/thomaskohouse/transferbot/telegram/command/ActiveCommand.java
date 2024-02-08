@@ -1,6 +1,8 @@
 package ru.thomaskohouse.transferbot.telegram.command;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -10,8 +12,9 @@ import ru.thomaskohouse.transferbot.utils.TransferUtils;
 @RequiredArgsConstructor
 @Service
 public class ActiveCommand implements Command{
-    private final VkChatService vkChatService;
+
     private final TransferUtils transferUtils;
+    private final Logger logger = LoggerFactory.getLogger(ActiveCommand.class);
     @Override
     public SendMessage apply(Update update) {
         String infoMessageText = null;
@@ -19,14 +22,7 @@ public class ActiveCommand implements Command{
             String messageText = update.getMessage().getText();
             String[] args = messageText.split(" ");
             String chatName = args[1];
-            Long chatId = vkChatService.getChatId(chatName);
-            if (chatId != null){
-                transferUtils.setVkChatId(chatId);
-                System.out.printf("Чат %s (%s) был выбран активным", chatName, chatId);
-                infoMessageText = "Чат " + chatName + " выбран активным! Любое отправленное сообщение улетит прямиком туда";
-            } else {
-                infoMessageText = "Нет такого чата как " + chatName;
-            }
+            infoMessageText = transferUtils.changeVkDestiantion(chatName);
         } else {
             infoMessageText = "Всё плохо с параметрами команды /active";
         }

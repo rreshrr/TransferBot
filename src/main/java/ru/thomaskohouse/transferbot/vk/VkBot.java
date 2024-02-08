@@ -8,6 +8,8 @@ import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.responses.GetLongPollServerResponse;
 import com.vk.api.sdk.queries.groups.GroupsGetLongPollServerQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.thomaskohouse.transferbot.utils.CommonUtils;
@@ -18,6 +20,7 @@ import ru.thomaskohouse.transferbot.telegram.TelegramBot;
 @Component
 public class VkBot {
 
+    private final Logger logger = LoggerFactory.getLogger(VkBot.class);
     public VkBot(@Autowired VkBotProperties vkBotProperties, @Autowired TelegramBot telegramBot,
                  @Autowired NetworkUtils networkUtils, @Autowired CommonUtils commonUtils) {
 
@@ -30,16 +33,14 @@ public class VkBot {
         try {
             response = serverQuery.execute();
         } catch (ApiException | ClientException e) {
-            System.err.println("Ошибка! При выполнении запроса от лица группы к серверу...");
+            logger.error("Ошибка! При выполнении запроса от лица группы к серверу...");
             throw new RuntimeException(e);
         }
-
         String key = response.getKey();
         Integer ts = Integer.parseInt(response.getTs());
 
         String serverUrl = response.getServer().toString();
-        System.out.println("VkBot - Init success");
-
+        logger.info("VkBot - Init success");
         Thread thread = new Thread(new VkBotMessageListener(serverUrl, key, ts, networkUtils, commonUtils, telegramBot));
         thread.start();
     }

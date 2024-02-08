@@ -14,6 +14,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.thomaskohouse.transferbot.vk.VkBotProperties;
 
@@ -31,6 +33,7 @@ import java.util.List;
 public class NetworkUtils {
     private final VkBotProperties vkBotProperties;
     private  final TransferUtils transferUtils;
+    private final Logger logger = LoggerFactory.getLogger(NetworkUtils.class);
     public String httpGet (String url) {
         String responseString = null;
         HttpGet httpGet = new HttpGet(url);
@@ -42,7 +45,7 @@ public class NetworkUtils {
                      .execute(httpGet);
             responseString = EntityUtils.toString(response.getEntity());
         } catch (Exception e){
-            System.err.println("Что-то пошло не так во время отправки GET-запроса " + url);
+            logger.error("Что-то пошло не так во время отправки GET-запроса " + url);
         }
         return responseString;
     }
@@ -73,7 +76,7 @@ public class NetworkUtils {
         params.add(new BasicNameValuePair("message", text));
         params.add(new BasicNameValuePair("access_token", vkBotProperties.getClientSecret()));
         params.add(new BasicNameValuePair("v", "5.199"));
-        System.out.printf("\nОтправили вк: %s", text);
+        logger.info("Отправили вк: {}", text);
         httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         httpClient.execute(httpPost);
         httpClient.close();
