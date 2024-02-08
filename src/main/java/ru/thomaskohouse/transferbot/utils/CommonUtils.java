@@ -8,8 +8,11 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import ru.thomaskohouse.transferbot.service.UniqueMessageService;
 import ru.thomaskohouse.transferbot.service.VkChatService;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -17,7 +20,9 @@ import java.util.Date;
 @AllArgsConstructor
 public class CommonUtils {
     private final NetworkUtils networkUtils;
+    private final TransferUtils transferUtils;
     private final VkChatService vkChatService;
+    private final UniqueMessageService uniqueMessageService;
     private final Logger logger = LoggerFactory.getLogger(CommonUtils.class);
 
     public String getStringDateTimeFromUnixTime(String unixTimestamp) {
@@ -36,7 +41,11 @@ public class CommonUtils {
         for (JsonElement ob : msg_array) {
             JsonObject message = ob.getAsJsonObject().get("object").getAsJsonObject().get("message").getAsJsonObject();
 
-            String chatName = vkChatService.getChatName(Long.parseLong(message.get("peer_id").toString()));
+            Long chatId = message.get("peer_id").getAsLong();
+            String chatName = vkChatService.getChatName(chatId);
+            if (chatId.equals(transferUtils.getVkChatId())){
+                chatName += " \uD83D\uDFE2";
+            }
             messageText.append("[#").append(chatName).append("]\n");
 
             messageText.append(networkUtils.getUsername(message.get("from_id").getAsString()));
@@ -90,4 +99,33 @@ public class CommonUtils {
         return String.valueOf(messageText);
     }
 
+    public String parseVkMessageIdForTgFromJsonMessageVk(String jsonString) {
+        Gson gs = new Gson();
+        JsonObject messageObject = gs.fromJson(jsonString, JsonObject.class);
+        JsonArray msg_array = messageObject.getAsJsonArray("updates");
+        String vkMessageId = "-1";
+        if (!msg_array.isEmpty()) {
+            vkMessageId = msg_array.get(0).getAsJsonObject().getAsJsonObject()
+                    .get("object").getAsJsonObject().get("message").getAsJsonObject().get("conversation_message_id").getAsString();
+        }
+
+        return vkMessageId;
+    }
+
+    public void parseTgMessageForVk(Message message){
+        try {
+            StringBuilder messageText = new StringBuilder(message.getText());
+            if (message.isReply()){
+                String tgId = message.getReplyToMessage().getMessageId().toString();
+                String vkId = uniqueMessageService.getVkId(tgId);
+                networkUtils.sendReplyToVk(messageText.toString(), message, vkId);
+
+            } else {
+                networkUtils.sendToVk(messageText.toString(), message);
+            }
+        } catch (IOException e) {
+            logger.error("ошибка при отправке смс в тг");
+            throw new RuntimeException(e);
+        }
+    }
 }

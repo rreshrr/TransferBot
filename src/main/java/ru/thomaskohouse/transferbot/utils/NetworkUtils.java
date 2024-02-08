@@ -17,6 +17,10 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import ru.thomaskohouse.transferbot.MessageDirection;
+import ru.thomaskohouse.transferbot.entity.UniqueMessage;
+import ru.thomaskohouse.transferbot.service.UniqueMessageService;
 import ru.thomaskohouse.transferbot.vk.VkBotProperties;
 
 import java.io.IOException;
@@ -33,6 +37,7 @@ import java.util.List;
 public class NetworkUtils {
     private final VkBotProperties vkBotProperties;
     private  final TransferUtils transferUtils;
+    private final UniqueMessageService uniqueMessageService;
     private final Logger logger = LoggerFactory.getLogger(NetworkUtils.class);
     public String httpGet (String url) {
         String responseString = null;
@@ -61,9 +66,9 @@ public class NetworkUtils {
         return firstObject.get("first_name").getAsString() + " " + firstObject.get("last_name").getAsString();
     }
 
-    public void sendToVk(String text) throws IOException {
+    public void sendToVk(String text, Message message) throws IOException {
         String url = "https://api.vk.com/method/messages.send";
-
+        Gson gs = new Gson();
         CloseableHttpClient httpClient =
                 HttpClients.custom().setDefaultRequestConfig(
                                 RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
@@ -78,7 +83,40 @@ public class NetworkUtils {
         params.add(new BasicNameValuePair("v", "5.199"));
         logger.info("Отправили вк: {}", text);
         httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
-        httpClient.execute(httpPost);
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        JsonObject jsonObject = gs.fromJson(EntityUtils.toString(response.getEntity()), JsonObject.class);
         httpClient.close();
+        response.close();
+        String vkId = jsonObject.get("response").getAsString();
+        uniqueMessageService.addMessage(vkId, String.valueOf(message.getMessageId()), MessageDirection.FROM_TG_TO_VK);
     }
+
+    public void sendReplyToVk(String text, Message message, String replyVkId) throws IOException {
+        String url = "https://api.vk.com/method/messages.send";
+        Gson gs = new Gson();
+        CloseableHttpClient httpClient =
+                HttpClients.custom().setDefaultRequestConfig(
+                                RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
+                        .build();
+        HttpPost httpPost = new HttpPost(url);
+
+        List<NameValuePair> params = new ArrayList<NameValuePair>(5);
+        params.add(new BasicNameValuePair("random_id", "0"));
+        params.add(new BasicNameValuePair("peer_id", transferUtils.getVkChatId().toString()));
+        params.add(new BasicNameValuePair("message", text));
+        params.add(new BasicNameValuePair("access_token", vkBotProperties.getClientSecret()));
+        params.add(new BasicNameValuePair("v", "5.199"));
+        params.add(new BasicNameValuePair("reply_to", replyVkId));
+        logger.info("Отправили вк: {}", text);
+        httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        CloseableHttpResponse response = httpClient.execute(httpPost);
+        JsonObject jsonObject = gs.fromJson(EntityUtils.toString(response.getEntity()), JsonObject.class);
+        httpClient.close();
+        response.close();
+        String vkId = jsonObject.get("response").getAsString();
+        uniqueMessageService.addMessage(vkId, String.valueOf(message.getMessageId()), MessageDirection.FROM_TG_TO_VK);
+    }
+
+
+
 }

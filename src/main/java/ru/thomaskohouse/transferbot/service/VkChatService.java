@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.thomaskohouse.transferbot.entity.VkChat;
 import ru.thomaskohouse.transferbot.repository.VkChatRepository;
 
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +27,14 @@ public class VkChatService {
     public Long getChatId(String chatName){
         Optional<VkChat> vkChat = vkChatRepository.findVkChatByName(chatName);
         return vkChat.map(VkChat::getChatId).orElse(null);
+    }
+
+    public Map<Long, String> getAllChats(){
+        Map<Long, String> result = new HashMap<>();
+        for (VkChat chat : vkChatRepository.findAll()) {
+            result.put(chat.getChatId(), chat.getName());
+        }
+        return result;
     }
 
 }

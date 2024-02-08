@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import ru.thomaskohouse.transferbot.telegram.command.ActiveCommand;
-import ru.thomaskohouse.transferbot.telegram.command.AddCommand;
-import ru.thomaskohouse.transferbot.telegram.command.Command;
-import ru.thomaskohouse.transferbot.telegram.command.StartCommand;
+import ru.thomaskohouse.transferbot.telegram.command.*;
 
 import java.util.Map;
 
@@ -19,11 +16,12 @@ public class CommandsHandler {
     private final Map<String, Command> commands;
 
     public CommandsHandler(@Autowired StartCommand startCommand, @Autowired AddCommand addCommand,
-                           @Autowired ActiveCommand activeCommand) {
+                           @Autowired ActiveCommand activeCommand, @Autowired ChatsCommand chatsCommand) {
         this.commands = Map.of(
                 "/start", startCommand,
                 "/add", addCommand,
-                "/active", activeCommand
+                "/active", activeCommand,
+                "/chats", chatsCommand
         );
     }
 

@@ -6,9 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.thomaskohouse.transferbot.MessageDirection;
+import ru.thomaskohouse.transferbot.service.UniqueMessageService;
 import ru.thomaskohouse.transferbot.service.VkChatService;
+import ru.thomaskohouse.transferbot.utils.CommonUtils;
 import ru.thomaskohouse.transferbot.utils.NetworkUtils;
 import ru.thomaskohouse.transferbot.utils.TransferProperties;
 import ru.thomaskohouse.transferbot.utils.TransferUtils;
@@ -22,9 +26,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final TelegramBotProperties telegramBotProperties;
     private final CommandsHandler commandsHandler;
     private final TransferProperties transferProperties;
-    private final NetworkUtils networkUtils;
+    private final CommonUtils commonUtils;
     private final TransferUtils transferUtils;
-    private final VkChatService vkChatService;
+    private final UniqueMessageService uniqueMessageService;
     Logger logger = LoggerFactory.getLogger(TelegramBot.class);
     @Override
     public String getBotUsername() {
@@ -34,10 +38,21 @@ public class TelegramBot extends TelegramLongPollingBot {
     public String getBotToken() {
         return telegramBotProperties.getToken();
     }
+    private void sendMessage(SendMessage sendMessage, String vkMessageId) {
+        try {
+            Message sendedMessage = execute(sendMessage);
+            uniqueMessageService.addMessage(vkMessageId,
+                    String.valueOf(sendedMessage.getMessageId()), MessageDirection.FROM_VK_TO_TG);
+            logger.info("Отправили в телеграм {}", sendedMessage);
+
+        } catch (TelegramApiException e) {
+            logger.error("Ошибка при отправке сообщения в Telegram" + e.getMessage());
+        }
+    }
     private void sendMessage(SendMessage sendMessage) {
         try {
-            execute(sendMessage);
-            logger.info("Отправили в телеграм {}", sendMessage);
+            Message sendedMessage = execute(sendMessage);
+            logger.info("Отправили в телеграм {}", sendedMessage);
         } catch (TelegramApiException e) {
             logger.error("Ошибка при отправке сообщения в Telegram" + e.getMessage());
         }
@@ -51,31 +66,21 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if (update.getMessage().getText().startsWith("/")) {
                 sendMessage(commandsHandler.handleCommands(update));
             } else if (update.getMessage().getText().startsWith("#")) {
-                sendTextMessage(transferUtils.changeVkDestiantion(update.getMessage().getText().replace("#", "")));
+                sendMessage(transferUtils.changeVkDestiantion(update.getMessage().getText().replace("#", "")));
             }
             else {
-                try {
-                    StringBuilder messageText = new StringBuilder(update.getMessage().getText());
-                    if (update.getMessage().isReply()){
-                       messageText.append("\n");
-                       String[] replyLines = update.getMessage().getReplyToMessage().getText().split("\n");
-                        for (String line: replyLines) {
-                            messageText.append("\t\n>").append(line);
-                        }
-                    }
-                    networkUtils.sendToVk(messageText.toString());
+                commonUtils.parseTgMessageForVk(update.getMessage());
 
-                } catch (IOException e) {
-                    logger.error("ошибка при отправке смс в тг");
-                    throw new RuntimeException(e);
-                }
             }
         } else if (update.hasCallbackQuery()) {
             logger.error("Пока не орабатываем каллбеки...");
         }
     }
 
-    public void sendTextMessage(String text){
+    public void sendMessage(String text){
         sendMessage(new SendMessage(transferProperties.getTgChatId(), text));
+    }
+    public void sendMessage(String text, String vkId){
+        sendMessage(new SendMessage(transferProperties.getTgChatId(), text), vkId);
     }
 }
